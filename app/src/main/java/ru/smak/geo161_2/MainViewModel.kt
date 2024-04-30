@@ -22,7 +22,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app){
     val location: StateFlow<Location?>
         get() = Locator.location
 
-    private fun startLocationUpdates() {
+    fun startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(
                 getApplication<Application>().applicationContext,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -35,7 +35,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app){
         }
         fusedLocationClient.lastLocation.addOnCompleteListener {
             viewModelScope.launch {
-                //trackPoints.clear()
                 fusedLocationClient.requestLocationUpdates(
                     Locator.locationRequest,
                     Locator,
