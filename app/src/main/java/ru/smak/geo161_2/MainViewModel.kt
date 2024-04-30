@@ -2,16 +2,17 @@ package ru.smak.geo161_2
 
 import android.Manifest
 import android.app.Application
-import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Looper
+import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.smak.geo161_2.locating.Locator
 
 class MainViewModel(app: Application) : AndroidViewModel(app){
@@ -19,8 +20,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app){
     private val fusedLocationClient = LocationServices
         .getFusedLocationProviderClient(app.applicationContext)
 
-    val location: StateFlow<Location?>
-        get() = Locator.location
+    val locations = mutableStateListOf<Location>()
+
+    init {
+
+        viewModelScope.launch(Dispatchers.IO) {
+            Locator.location.collect{ loc ->
+                withContext(Dispatchers.Main){
+                    loc?.let{ locations.add(it) }
+                }
+            }
+        }
+    }
 
     fun startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(
